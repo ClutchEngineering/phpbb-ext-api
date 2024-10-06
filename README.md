@@ -1,6 +1,6 @@
-# phpBB API
+# cars.forum API
 
-An unofficial API for the phpBB platform.
+The cars.forum API.
 
 ## Install
 

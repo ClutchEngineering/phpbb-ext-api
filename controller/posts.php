@@ -2,7 +2,7 @@
 
 /**
  * @package API
- * @copyright (c) 2024 Daniel James
+ * @copyright (c) 2024 Daniel James, (c) 2024 Clutch Engineering
  * @license http://opensource.org/licenses/gpl-license.php GNU Public License
  */
 
