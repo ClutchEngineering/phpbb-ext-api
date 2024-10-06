@@ -6,7 +6,7 @@
  * @license http://opensource.org/licenses/gpl-license.php GNU Public License
  */
 
-namespace danieltj\api\migrations;
+namespace clutchengineering\api\migrations;
 
 class install extends \phpbb\db\migration\migration {
 

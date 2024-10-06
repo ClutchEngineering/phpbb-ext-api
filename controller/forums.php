@@ -6,7 +6,7 @@
  * @license http://opensource.org/licenses/gpl-license.php GNU Public License
  */
 
-namespace danieltj\api\controller;
+namespace clutchengineering\api\controller;
 
 use \Symfony\Component\HttpFoundation\Response as Response;
 use \Symfony\Component\HttpFoundation\JsonResponse as JsonResponse;

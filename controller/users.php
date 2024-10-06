@@ -6,7 +6,7 @@
  * @license http://opensource.org/licenses/gpl-license.php GNU Public License
  */
 
-namespace danieltj\api\controller;
+namespace clutchengineering\api\controller;
 
 use phpbb\config\config;
 use phpbb\db\driver\driver_interface as database;

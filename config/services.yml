@@ -1,22 +1,22 @@
 services:
-    danieltj.api.controller:
-        class: danieltj\api\controller\core
+    clutchengineering.api.controller:
+        class: clutchengineering\api\controller\core
         arguments:
             - '@config'
             - '@dbal.conn'
             - '@controller.helper'
             - '@language'
 
-    danieltj.api.controller.users:
-        class: danieltj\api\controller\users
+    clutchengineering.api.controller.users:
+        class: clutchengineering\api\controller\users
         arguments:
             - '@config'
             - '@dbal.conn'
             - '@controller.helper'
             - '@language'
 
-    danieltj.api.listener:
-        class: danieltj\api\event\listener
+    clutchengineering.api.listener:
+        class: clutchengineering\api\event\listener
         arguments:
             - '@controller.helper'
             - '@template'

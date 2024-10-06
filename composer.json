@@ -1,5 +1,5 @@
 {
-    "name": "danieltj/api",
+    "name": "clutchengineering/api",
     "type": "phpbb-extension",
     "description": "An unofficial API for the phpBB platform.",
     "version": "0.1.0",

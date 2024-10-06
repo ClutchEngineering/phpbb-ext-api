@@ -6,7 +6,7 @@
  * @license http://opensource.org/licenses/gpl-license.php GNU Public License
  */
 
-namespace danieltj\api\event;
+namespace clutchengineering\api\event;
 
 use phpbb\controller\helper;
 
@@ -53,7 +53,7 @@ class listener implements EventSubscriberInterface {
 
         $lang_set_ext = $event['lang_set_ext'];
         $lang_set_ext[] = [
-            'ext_name' => 'danieltj/api',
+            'ext_name' => 'clutchengineering/api',
             'lang_set' => 'core',
         ];
         $event[ 'lang_set_ext' ] = $lang_set_ext;

@@ -6,7 +6,7 @@
  * @license http://opensource.org/licenses/gpl-license.php GNU Public License
  */
 
-namespace danieltj\api;
+namespace clutchengineering\api;
 
 class ext extends \phpbb\extension\base {
 
