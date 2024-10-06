@@ -1,11 +1,13 @@
-clutchengineering_api_default_route:
-    path: /api/v1
-    defaults: { _controller: clutchengineering.api.controller:default }
-
-clutchengineering_api_auth_route:
-    path: /api/v1/auth
-    defaults: { _controller: clutchengineering.api.controller:auth }
-
 clutchengineering_api_users_route:
     path: /api/v1/users/{user_id}
     defaults: { _controller: clutchengineering.api.controller.users:endpoint, user_id: 0 }
+
+clutchengineering_api_oauth_login:
+    path: /oauth/login
+    defaults: { _controller: clutchengineering.api.controller.oauth:login }
+    methods: [POST]
+
+clutchengineering_api_oauth_refresh:
+    path: /oauth/refresh
+    defaults: { _controller: clutchengineering.api.controller.oauth:refresh_token }
+    methods: [POST]

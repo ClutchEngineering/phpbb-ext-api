@@ -12,8 +12,7 @@
     ],
     "require": {
         "php": ">=7.0",
-        "composer/installers": "~1.0.0",
-        "phpbb/phpbb": ">=3.3.0"
+        "firebase/php-jwt": "^6.10"
     },
     "extra": {
         "display-name": "API",

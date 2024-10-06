@@ -1,0 +1,26 @@
+{% include 'overall_header.html' %}
+
+<h1>{{ lang('ACP_API_SETTINGS') }}</h1>
+
+<form id="acp_board" method="post" action="{{ U_ACTION }}">
+    <fieldset>
+        <dl>
+            <dt><label for="jwt_secret_key">{{ lang('ACP_JWT_SECRET_KEY') }}:</label><br /><span>{{ lang('ACP_JWT_SECRET_KEY_EXPLAIN') }}</span></dt>
+            <dd><input type="text" id="jwt_secret_key" name="jwt_secret_key" size="40" maxlength="255" value="{{ JWT_SECRET_KEY }}" /></dd>
+        </dl>
+
+        {% if JWT_SECRET_KEY_SET %}
+        <p class="success">{{ lang('ACP_JWT_SECRET_KEY_SET') }}</p>
+        {% else %}
+        <p class="error">{{ lang('ACP_JWT_SECRET_KEY_NOT_SET') }}</p>
+        {% endif %}
+    </fieldset>
+
+    <fieldset class="submit-buttons">
+        <input class="button1" type="submit" id="submit" name="submit" value="{{ lang('SUBMIT') }}" />&nbsp;
+        <input class="button2" type="reset" id="reset" name="reset" value="{{ lang('RESET') }}" />
+        {{ S_FORM_TOKEN }}
+    </fieldset>
+</form>
+
+{% include 'overall_footer.html' %}

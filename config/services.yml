@@ -15,6 +15,23 @@ services:
             - '@controller.helper'
             - '@language'
 
+    clutchengineering.api.admin.controller:
+        class: clutchengineering\api\controller\admin_controller
+        arguments:
+            - '@config'
+            - '@template'
+            - '@request'
+            - '@user'
+            - '@language'
+
+    clutchengineering.api.controller.oauth:
+        class: clutchengineering\api\controller\oauth
+        arguments:
+            - '@auth'
+            - '@user'
+            - '@dbal.conn'
+            - '@config'
+
     clutchengineering.api.listener:
         class: clutchengineering\api\event\listener
         arguments:
@@ -22,3 +39,8 @@ services:
             - '@template'
         tags:
             - { name: event.listener }
+
+    clutchengineering.api.acp.main:
+        class: clutchengineering\api\acp\main_module
+        tags:
+            - { name: module.acp }
