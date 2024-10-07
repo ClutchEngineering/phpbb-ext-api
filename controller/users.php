@@ -12,6 +12,7 @@ use phpbb\config\config;
 use phpbb\db\driver\driver_interface as database;
 use phpbb\controller\helper;
 use phpbb\language\language;
+use clutchengineering\api\auth\api_auth_service;
 
 use \Symfony\Component\HttpFoundation\Response as Response;
 use \Symfony\Component\HttpFoundation\JsonResponse as JsonResponse;
@@ -38,6 +39,8 @@ class users {
      */
     protected $language;
 
+    protected $auth_service;
+
     /**
      * Constructor
      *
@@ -46,13 +49,18 @@ class users {
      * @param \phpbb\controller\helper          $helper
      * @param \phpbb\language\language          $language
      */
-    public function __construct( config $config, database $database, helper $helper, language $language ) {
-
-        $this->config   = $config;
+    public function __construct(
+        config $config,
+        database $database,
+        helper $helper,
+        language $language,
+        api_auth_service $auth_service
+    ) {
+        $this->config = $config;
         $this->database = $database;
-        $this->helper   = $helper;
+        $this->helper = $helper;
         $this->language = $language;
-
+        $this->auth_service = $auth_service;
     }
 
     /**
@@ -115,40 +123,36 @@ class users {
 
     }
 
-    /**
-     * Response method for `Users` endpoint.
-     *
-     * @param integer $user_id
-     * @throws \phpbb\exception\http_exception
-     * @return \Symfony\Component\HttpFoundation\Response A Symfony Response object
-     */
-    public function endpoint( $user_id = 0 ) {
+    public function endpoint(Request $request, $user_id = 0)
+    {
+        $token = $request->headers->get('Authorization');
+        $auth_result = $this->auth_service->authenticate($token);
 
-        // Create initial response
+        if ($auth_result !== true) {
+            return $auth_result; // This will be a JsonResponse with an error
+        }
+
+        // Your existing endpoint logic here
         $response = [
-            'message'   => $this->language->lang( 'DEFAULT_API_RESPONSE' ),
-            'status'    => 200,
-            'data'      => [
+            'message' => $this->language->lang('DEFAULT_API_RESPONSE'),
+            'status' => 200,
+            'data' => [
                 'user_id' => (int) $user_id,
                 'user' => []
             ]
         ];
 
-        // Fetch user
-        $user = $this->get_user( $user_id );
+        $user = $this->get_user($user_id);
 
-        if ( false !== $user ) {
-
-            $response[ 'data' ][ 'user' ] = [
-                'user_id' => $user[ 'user_id' ],
-                'user_name' => $user[ 'username' ],
-                'user_email' => $user[ 'user_email' ],
+        if (false !== $user) {
+            $response['data']['user'] = [
+                'user_id' => $user['user_id'],
+                'user_name' => $user['username'],
+                'user_email' => $user['user_email'],
             ];
-        
         }
 
-        return new JsonResponse( $response, 200 );
-
+        return new JsonResponse($response, 200);
     }
 
 }

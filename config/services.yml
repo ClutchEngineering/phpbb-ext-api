@@ -14,6 +14,7 @@ services:
             - '@dbal.conn'
             - '@controller.helper'
             - '@language'
+            - '@clutchengineering.api.auth.api_auth_service'
 
     clutchengineering.api.admin.controller:
         class: clutchengineering\api\controller\admin_controller
@@ -24,6 +25,18 @@ services:
             - '@user'
             - '@language'
 
+    clutchengineering.api.auth.token_manager:
+        class: clutchengineering\api\auth\token_manager
+        arguments:
+            - '@dbal.conn'
+            - '@config'
+            - '%core.table_prefix%api_oauth_tokens'
+
+    clutchengineering.api.auth.api_auth_service:
+        class: clutchengineering\api\auth\api_auth_service
+        arguments:
+            - '@clutchengineering.api.auth.token_manager'
+
     clutchengineering.api.controller.oauth:
         class: clutchengineering\api\controller\oauth
         arguments:
@@ -31,7 +44,17 @@ services:
             - '@user'
             - '@dbal.conn'
             - '@config'
+            - '@clutchengineering.api.auth.token_manager'
 
+    clutchengineering.api.controller.users:
+        class: clutchengineering\api\controller\users
+        arguments:
+            - '@config'
+            - '@dbal.conn'
+            - '@controller.helper'
+            - '@language'
+            - '@clutchengineering.api.auth.api_auth_service'
+            
     clutchengineering.api.listener:
         class: clutchengineering\api\event\listener
         arguments:

@@ -9,11 +9,6 @@ class add_jwt_secret_key extends \phpbb\db\migration\migration
         return isset($this->config['jwt_secret_key']) && isset($this->config['jwt_secret_key_set']);
     }
 
-    static public function depends_on()
-    {
-        return ['\clutchengineering\api\migrations\install'];
-    }
-
     public function update_data()
     {
         return [
