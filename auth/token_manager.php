@@ -46,7 +46,7 @@ class token_manager
             'type' => $type
         ];
 
-        return JWT::encode($payload, $this->config['jwt_secret_key'], 'HS256');
+        return JWT::encode($payload, $this->config['clutcheng_api_jwt_secret_key'], 'HS256');
     }
 
     protected function store_tokens($user_id, $access_token, $refresh_token)
@@ -66,7 +66,7 @@ class token_manager
     public function validate_token($token)
     {
         try {
-            $decoded = JWT::decode($token, $this->config['jwt_secret_key'], ['HS256']);
+            $decoded = JWT::decode($token, $this->config['clutcheng_api_jwt_secret_key'], ['HS256']);
             
             // Check if token exists in database and is not expired
             $sql = 'SELECT * FROM ' . $this->tokens_table . ' 
@@ -85,7 +85,7 @@ class token_manager
     public function refresh_token($refresh_token)
     {
         try {
-            $decoded = JWT::decode($refresh_token, $this->config['jwt_secret_key'], ['HS256']);
+            $decoded = JWT::decode($refresh_token, $this->config['clutcheng_api_jwt_secret_key'], ['HS256']);
             
             if ($decoded->type !== 'refresh') {
                 throw new \Exception('Invalid token type');

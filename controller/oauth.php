@@ -35,7 +35,7 @@ class oauth
 
     public function login(Request $request)
     {
-        if (!$this->config['jwt_secret_key'] || $this->config['jwt_secret_key_set'] !== '1') {
+        if (!$this->config['clutcheng_api_jwt_secret_key'] || $this->config['clutcheng_api_jwt_secret_key_set'] !== '1') {
             return new JsonResponse([
                 'error' => 'OAuth not properly configured for this server.',
                 'error_code' => 1
