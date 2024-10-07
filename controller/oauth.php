@@ -9,6 +9,7 @@
 namespace clutchengineering\api\controller;
 
 use Symfony\Component\HttpFoundation\JsonResponse;
+use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Request;
 use phpbb\auth\auth;
 use phpbb\config\config;
@@ -52,10 +53,75 @@ class oauth
         $result = $this->auth->login($username, $password);
         if ($result['status'] == LOGIN_SUCCESS)
         {
-            $tokens = $this->token_manager->create_tokens($this->user->data['user_id']);
-            return new JsonResponse($tokens, 200);
+            $auth_code = $this->generate_auth_code($this->user->data['user_id']);
+            $redirect_uri = $this->config['clutcheng_api_oauth_redirect_uri'];
+
+            if (empty($redirect_uri)) {
+                return new JsonResponse(['error' => 'Redirect URI not configured'], 500);
+            }
+
+            $redirect_url = $redirect_uri . (parse_url($redirect_uri, PHP_URL_QUERY) ? '&' : '?') . 'code=' . $auth_code;
+            return new RedirectResponse($redirect_url);
         }
-        return new JsonResponse(['error' => 'Invalid credentials'], 401);
+        return new JsonResponse([
+            'error' => 'Invalid credentials',
+            'error_code' => 2
+        ], 401);
+    }
+
+    protected function generate_auth_code($user_id)
+    {
+        $auth_code = bin2hex(random_bytes(16)); // Generate a random 32-character string
+
+        // Store the auth code in the database
+        $sql_ary = [
+            'user_id' => $user_id,
+            'auth_code' => $auth_code,
+            'created_at' => time(),
+            'expires_at' => time() + 600, // Auth code expires in 10 minutes
+        ];
+
+        $sql = 'INSERT INTO ' . $this->token_manager->get_auth_codes_table() . ' ' . $this->db->sql_build_array('INSERT', $sql_ary);
+        $this->db->sql_query($sql);
+
+        return $auth_code;
+    }
+
+    public function authorize(Request $request)
+    {
+        $auth_code = $request->get('code');
+
+        if (!$auth_code) {
+            return new JsonResponse([
+                'error' => 'Missing authorization code',
+                'error_code' => 3
+            ], 400);
+        }
+
+        // Verify the auth code
+        $sql = 'SELECT * FROM ' . $this->token_manager->get_auth_codes_table() . '
+                WHERE auth_code = "' . $this->db->sql_escape($auth_code) . '"
+                AND expires_at > ' . time();
+        $result = $this->db->sql_query($sql);
+        $row = $this->db->sql_fetchrow($result);
+        $this->db->sql_freeresult($result);
+
+        if (!$row) {
+            return new JsonResponse([
+                'error' => 'Invalid or expired authorization code',
+                'error_code' => 4
+            ], 401);
+        }
+
+        // Generate tokens
+        $tokens = $this->token_manager->create_tokens($row['user_id']);
+
+        // Delete the used auth code and any expired auth codes
+        $sql = 'DELETE FROM ' . $this->token_manager->get_auth_codes_table() . '
+                WHERE auth_code = "' . $this->db->sql_escape($auth_code) . '" OR expires_at < ' . time();
+        $this->db->sql_query($sql);
+
+        return new JsonResponse($tokens, 200);
     }
 
     public function refresh_token(Request $request)
@@ -63,14 +129,20 @@ class oauth
         $refresh_token = $request->get('refresh_token');
 
         if (!$refresh_token) {
-            return new JsonResponse(['error' => 'Missing refresh token'], 400);
+            return new JsonResponse([
+                'error' => 'Missing refresh token',
+                'error_code' => 5
+            ], 400);
         }
 
         $new_tokens = $this->token_manager->refresh_token($refresh_token);
         if ($new_tokens) {
             return new JsonResponse($new_tokens, 200);
         }
-        return new JsonResponse(['error' => 'Invalid or expired refresh token'], 401);
+        return new JsonResponse([
+            'error' => 'Invalid or expired refresh token',
+            'error_code' => 6
+        ], 401);
     }
 
     public function revoke_token(Request $request)
@@ -78,7 +150,10 @@ class oauth
         $token = $request->get('token');
 
         if (!$token) {
-            return new JsonResponse(['error' => 'Missing token'], 400);
+            return new JsonResponse([
+                'error' => 'Missing token',
+                'error_code' => 7
+            ], 400);
         }
 
         $this->token_manager->revoke_token($token);

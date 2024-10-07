@@ -11,12 +11,19 @@ class token_manager
     protected $db;
     protected $config;
     protected $tokens_table;
+    protected $auth_codes_table;
 
-    public function __construct(driver_interface $db, config $config, $tokens_table)
+    public function __construct(driver_interface $db, config $config, $table_prefix)
     {
         $this->db = $db;
         $this->config = $config;
-        $this->tokens_table = $tokens_table;
+        $this->tokens_table = $table_prefix . 'clutcheng_api_oauth_tokens';
+        $this->auth_codes_table = $table_prefix . 'clutcheng_api_oauth_auth_codes';
+    }
+
+    public function get_auth_codes_table()
+    {
+        return $this->auth_codes_table;
     }
 
     public function create_tokens($user_id)

@@ -30,7 +30,7 @@ services:
         arguments:
             - '@dbal.conn'
             - '@config'
-            - '%core.table_prefix%api_oauth_tokens'
+            - '%core.table_prefix%'
 
     clutchengineering.api.auth.api_auth_service:
         class: clutchengineering\api\auth\api_auth_service

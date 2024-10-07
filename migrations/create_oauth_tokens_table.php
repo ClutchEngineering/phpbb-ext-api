@@ -6,7 +6,7 @@ class create_oauth_tokens_table extends \phpbb\db\migration\migration
 {
     public function effectively_installed()
     {
-        return $this->db_tools->sql_table_exists($this->table_prefix . 'api_oauth_tokens');
+        return $this->db_tools->sql_table_exists($this->table_prefix . 'clutcheng_api_oauth_tokens');
     }
 
     public static function depends_on()
@@ -18,7 +18,7 @@ class create_oauth_tokens_table extends \phpbb\db\migration\migration
     {
         return [
             'add_tables' => [
-                $this->table_prefix . 'api_oauth_tokens' => [
+                $this->table_prefix . 'clutcheng_api_oauth_tokens' => [
                     'COLUMNS' => [
                         'token_id'      => ['UINT', null, 'auto_increment'],
                         'user_id'       => ['UINT', 0],
@@ -40,7 +40,7 @@ class create_oauth_tokens_table extends \phpbb\db\migration\migration
     {
         return [
             'drop_tables' => [
-                $this->table_prefix . 'api_oauth_tokens',
+                $this->table_prefix . 'clutcheng_api_oauth_tokens',
             ],
         ];
     }
