@@ -5,6 +5,26 @@ services:
     clutchengineering.api.util.date_util:
         class: clutchengineering\api\util\DateUtil
 
+    clutchengineering.api.middleware.rate_limiter:
+        class: clutchengineering\api\middleware\RateLimiter
+        arguments:
+            - 60 # Requests per minute
+            - '@cache.driver'
+
+    # Event listeners
+
+    clutchengineering.api.event.api_rate_limit_listener:
+        class: clutchengineering\api\event\ApiRateLimitListener
+        arguments:
+            - '@clutchengineering.api.middleware.rate_limiter'
+        tags:
+            - { name: kernel.event_subscriber }
+
+    clutchengineering.api.event.api_response_listener:
+        class: clutchengineering\api\event\ApiResponseListener
+        tags:
+            - { name: kernel.event_subscriber }
+
     # Cron tasks
 
     clutchengineering.api.cron.task.cleanup_tokens:
