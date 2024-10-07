@@ -12,6 +12,7 @@ use phpbb\config\config;
 use phpbb\db\driver\driver_interface as database;
 use phpbb\controller\helper;
 use phpbb\language\language;
+use phpbb\group\helper as group_helper;
 use clutchengineering\api\auth\api_auth_service;
 use clutchengineering\api\util\DateUtil;
 
@@ -26,19 +27,22 @@ class users {
     protected $helper;
     protected $language;
     protected $auth_service;
+    protected $group_helper;
 
     public function __construct(
         config $config,
         database $database,
         helper $helper,
         language $language,
-        api_auth_service $auth_service
+        api_auth_service $auth_service,
+        group_helper $group_helper
     ) {
         $this->config = $config;
         $this->database = $database;
         $this->helper = $helper;
         $this->language = $language;
         $this->auth_service = $auth_service;
+        $this->group_helper = $group_helper;
     }
 
     /**
@@ -52,8 +56,11 @@ class users {
             return false;
         }
 
-        $sql = 'SELECT user_id, username, user_email, user_regdate, user_lastvisit, user_avatar, user_avatar_type, user_avatar_width, user_avatar_height FROM ' . USERS_TABLE . ' WHERE ' . $this->database->sql_build_array( 'SELECT', [
-            'user_id' => $user_id
+        $sql = 'SELECT u.user_id, u.username, u.user_email, u.user_regdate, u.user_lastvisit, u.user_avatar, u.user_avatar_type, u.user_avatar_width, u.user_avatar_height, g.group_colour, g.group_name
+            FROM ' . USERS_TABLE . ' u
+            LEFT JOIN ' . GROUPS_TABLE . ' g ON (u.group_id = g.group_id)
+            WHERE ' . $this->database->sql_build_array( 'SELECT', [
+            'u.user_id' => $user_id
         ] );
 
         $result = $this->database->sql_query( $sql );
@@ -65,7 +72,10 @@ class users {
 
     private function get_user_by_username($username)
     {
-        $sql = 'SELECT user_id, username, user_regdate, user_lastvisit, user_avatar, user_avatar_type, user_avatar_width, user_avatar_height FROM ' . USERS_TABLE . ' WHERE ' . $this->database->sql_build_array('SELECT', [
+        $sql = 'SELECT u.user_id, u.username, u.user_regdate, u.user_lastvisit, u.user_avatar, u.user_avatar_type, u.user_avatar_width, u.user_avatar_height, g.group_colour, g.group_name
+            FROM ' . USERS_TABLE . ' u
+            LEFT JOIN ' . GROUPS_TABLE . ' g ON (u.group_id = g.group_id)
+            WHERE ' . $this->database->sql_build_array('SELECT', [
             'username_clean' => utf8_clean_string($username)
         ]);
 
@@ -87,6 +97,12 @@ class users {
             'last_visit' => DateUtil::formatDate($user['user_lastvisit']),
             'avatar' => $avatar,
         ];
+        if (!empty($user['group_colour'])) {
+            $response['group_color'] = $user['group_colour'];
+        }
+        if (!empty($user['group_name'])) {
+            $response['group_name'] = $this->group_helper->get_name($user['group_name']);
+        }
         // If user contains user_email, add it to the response
         if (!empty($user['user_email'])) {
             $response['email'] = $user['user_email'];
@@ -111,11 +127,6 @@ class users {
 
     public function user_by_username(Request $request, $username = '')
     {
-        $auth_result = $this->auth_service->authenticate();
-        if ($auth_result !== true) {
-            return $auth_result; // This will be a JsonResponse with an error
-        }
-
         if (empty($username)) {
             return new JsonResponse(['error' => 'Username is required'], 400);
         }
