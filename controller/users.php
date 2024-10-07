@@ -19,36 +19,12 @@ use \Symfony\Component\HttpFoundation\JsonResponse as JsonResponse;
 
 class users {
 
-    /**
-     * @var \phpbb\config\config
-     */
     protected $config;
-
-    /**
-     * @var \phpbb\db\driver\driver_interface
-     */
     protected $database;
-
-    /**
-     * @var \phpbb\controller\helper
-     */
     protected $helper;
-
-    /**
-     * @var \phpbb\language\language
-     */
     protected $language;
-
     protected $auth_service;
 
-    /**
-     * Constructor
-     *
-     * @param \phpbb\config\config              $config
-     * @param phpbb\db\driver\driver_interface  $database
-     * @param \phpbb\controller\helper          $helper
-     * @param \phpbb\language\language          $language
-     */
     public function __construct(
         config $config,
         database $database,
@@ -61,34 +37,6 @@ class users {
         $this->helper = $helper;
         $this->language = $language;
         $this->auth_service = $auth_service;
-    }
-
-    /**
-     * Authenticate an API key.
-     * 
-     * @todo need to think about api key security and hashing
-     * 
-     * @param string $api_key
-     * @return boolean
-     */
-    private function _validate_api_key( $api_key = '' ) {
-
-        $sql = 'SELECT user_api_key FROM ' . USERS_TABLE . ' WHERE ' . $this->database->sql_build_array( 'SELECT', [
-            'user_api_key' => $api_key
-        ] );
-
-        $result = $this->database->sql_query( $sql );
-        $user = $this->database->sql_fetchrow( $result );
-        $this->database->sql_freeresult( $result );
-
-        if ( NULL === $user ) {
-
-            return false;
-
-        }
-
-        return true;
-
     }
 
     /**
@@ -125,9 +73,7 @@ class users {
 
     public function endpoint(Request $request, $user_id = 0)
     {
-        $token = $request->headers->get('Authorization');
-        $auth_result = $this->auth_service->authenticate($token);
-
+        $auth_result = $this->auth_service->authenticate();
         if ($auth_result !== true) {
             return $auth_result; // This will be a JsonResponse with an error
         }

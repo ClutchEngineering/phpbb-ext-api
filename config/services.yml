@@ -45,6 +45,7 @@ services:
             - '@dbal.conn'
             - '@config'
             - '@clutchengineering.api.auth.token_manager'
+            - '@clutchengineering.api.auth.api_auth_service'
 
     clutchengineering.api.controller.users:
         class: clutchengineering\api\controller\users

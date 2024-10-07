@@ -15,6 +15,7 @@ use phpbb\auth\auth;
 use phpbb\config\config;
 use phpbb\user;
 use phpbb\db\driver\driver_interface;
+use clutchengineering\api\auth\api_auth_service;
 use clutchengineering\api\auth\token_manager;
 
 class oauth
@@ -24,14 +25,22 @@ class oauth
     protected $db;
     protected $config;
     protected $token_manager;
+    protected $auth_service;
 
-    public function __construct(auth $auth, user $user, driver_interface $db, config $config, token_manager $token_manager)
-    {
+    public function __construct(
+        auth $auth,
+        user $user,
+        driver_interface $db,
+        config $config,
+        token_manager $token_manager,
+        api_auth_service $auth_service
+    ) {
         $this->auth = $auth;
         $this->user = $user;
         $this->db = $db;
         $this->config = $config;
         $this->token_manager = $token_manager;
+        $this->auth_service = $auth_service;
     }
 
     public function login(Request $request)
@@ -147,15 +156,12 @@ class oauth
 
     public function revoke_token(Request $request)
     {
-        $token = $request->get('token');
-
-        if (!$token) {
-            return new JsonResponse([
-                'error' => 'Missing token',
-                'error_code' => 7
-            ], 400);
+        $auth_result = $this->auth_service->authenticate();
+        if ($auth_result !== true) {
+            return $auth_result; // This will be a JsonResponse with an error
         }
 
+        $token = $this->auth_service->get_request_token();
         $this->token_manager->revoke_token($token);
         return new JsonResponse(['message' => 'Token revoked successfully'], 200);
     }

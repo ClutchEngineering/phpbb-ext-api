@@ -5,6 +5,7 @@ namespace clutchengineering\api\auth;
 use phpbb\db\driver\driver_interface;
 use phpbb\config\config;
 use Firebase\JWT\JWT;
+use Firebase\JWT\Key;
 
 class token_manager
 {
@@ -43,7 +44,7 @@ class token_manager
     protected function generate_token($user_id, $type = 'access')
     {
         $now = time();
-        $expiration = $type === 'access' ? $now + 3600 : $now + 604800; // 1 hour for access, 1 week for refresh
+        $expiration = $type === 'access' ? $now + 60 * 60 * 12 : $now + 604800; // 1 hour for access, 1 week for refresh
 
         $payload = [
             'iss' => $this->config['server_name'],
@@ -73,12 +74,13 @@ class token_manager
     public function validate_token($token)
     {
         try {
-            $decoded = JWT::decode($token, $this->config['clutcheng_api_jwt_secret_key'], ['HS256']);
-            
+            $decoded = JWT::decode($token, new Key($this->config['clutcheng_api_jwt_secret_key'], 'HS256'));
+
             // Check if token exists in database and is not expired
             $sql = 'SELECT * FROM ' . $this->tokens_table . ' 
-                    WHERE access_token = ' . $this->db->sql_escape($token) . '
-                    AND expires_at > ' . time();
+                    WHERE access_token = "' . $this->db->sql_escape($token) . '"
+                    AND expires_at > ' . time() . '
+                    LIMIT 1';
             $result = $this->db->sql_query($sql);
             $row = $this->db->sql_fetchrow($result);
             $this->db->sql_freeresult($result);
@@ -99,7 +101,7 @@ class token_manager
             }
 
             $sql = 'SELECT * FROM ' . $this->tokens_table . ' 
-                    WHERE refresh_token = ' . $this->db->sql_escape($refresh_token);
+                    WHERE refresh_token = "' . $this->db->sql_escape($refresh_token) . '"';
             $result = $this->db->sql_query($sql);
             $row = $this->db->sql_fetchrow($result);
             $this->db->sql_freeresult($result);
@@ -116,12 +118,12 @@ class token_manager
                 'access_token' => $new_tokens['access_token'],
                 'refresh_token' => $new_tokens['refresh_token'],
                 'created_at' => time(),
-                'expires_at' => time() + 3600
+                'expires_at' => time() + 60 * 60 * 12
             ];
 
             $sql = 'UPDATE ' . $this->tokens_table . ' 
                     SET ' . $this->db->sql_build_array('UPDATE', $sql_ary) . '
-                    WHERE refresh_token = ' . $this->db->sql_escape($refresh_token);
+                    WHERE refresh_token = "' . $this->db->sql_escape($refresh_token) . '"';
             $this->db->sql_query($sql);
 
             return $new_tokens;
@@ -133,8 +135,8 @@ class token_manager
     public function revoke_token($token)
     {
         $sql = 'DELETE FROM ' . $this->tokens_table . ' 
-                WHERE access_token = ' . $this->db->sql_escape($token) . '
-                OR refresh_token = ' . $this->db->sql_escape($token);
+                WHERE access_token = "' . $this->db->sql_escape($token) . '"
+                OR refresh_token = "' . $this->db->sql_escape($token) . '"';
         $this->db->sql_query($sql);
     }
 }
