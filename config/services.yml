@@ -1,4 +1,21 @@
 services:
+    clutchengineering.api.auth.token_cleanup:
+        class: clutchengineering\api\auth\token_cleanup
+        arguments:
+            - '@dbal.conn'
+            - '@config'
+            - '%core.table_prefix%'
+
+    clutchengineering.api.cron.task.cleanup_tokens:
+        class: clutchengineering\api\cron\task\cleanup_tokens
+        arguments:
+            - '@clutchengineering.api.auth.token_cleanup'
+            - '@config'
+        calls:
+            - [set_name, [clutchengineering.api.cron.task.cleanup_tokens]]
+        tags:
+            - { name: cron.task }
+
     clutchengineering.api.controller:
         class: clutchengineering\api\controller\core
         arguments:
