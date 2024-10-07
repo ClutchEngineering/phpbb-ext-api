@@ -1,10 +1,11 @@
 services:
-    clutchengineering.api.auth.token_cleanup:
-        class: clutchengineering\api\auth\token_cleanup
-        arguments:
-            - '@dbal.conn'
-            - '@config'
-            - '%core.table_prefix%'
+
+    # Utilities
+
+    clutchengineering.api.util.date_util:
+        class: clutchengineering\api\util\DateUtil
+
+    # Cron tasks
 
     clutchengineering.api.cron.task.cleanup_tokens:
         class: clutchengineering\api\cron\task\cleanup_tokens
@@ -15,6 +16,15 @@ services:
             - [set_name, [clutchengineering.api.cron.task.cleanup_tokens]]
         tags:
             - { name: cron.task }
+
+    # Controllers
+
+    clutchengineering.api.auth.token_cleanup:
+        class: clutchengineering\api\auth\token_cleanup
+        arguments:
+            - '@dbal.conn'
+            - '@config'
+            - '%core.table_prefix%'
 
     clutchengineering.api.controller:
         class: clutchengineering\api\controller\core
@@ -72,6 +82,8 @@ services:
             - '@controller.helper'
             - '@language'
             - '@clutchengineering.api.auth.api_auth_service'
+
+    # Event listeners
             
     clutchengineering.api.listener:
         class: clutchengineering\api\event\listener
@@ -80,6 +92,8 @@ services:
             - '@template'
         tags:
             - { name: event.listener }
+
+    # Admin Control Panel
 
     clutchengineering.api.acp.main:
         class: clutchengineering\api\acp\main_module

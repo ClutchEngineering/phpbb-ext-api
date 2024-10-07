@@ -1,10 +1,17 @@
-clutchengineering_api_users_route:
+# API routes
+
+clutchengineering_api_users_me_route:
+    path: /api/v1/users/me
+    defaults: { _controller: clutchengineering.api.controller.users:me }
+    methods: [GET]
+
+clutchengineering_api_users_user_route:
     path: /api/v1/users/{user_id}
     defaults: { _controller: clutchengineering.api.controller.users:endpoint, user_id: 0 }
     requirements:
         user_id: \d+
-    options:
-        middleware: ['clutchengineering.api.auth.api_auth_middleware']
+
+# OAuth routes
 
 clutchengineering_api_oauth_login:
     path: /oauth/login
@@ -20,5 +27,3 @@ clutchengineering_api_oauth_revoke:
     path: /oauth/revoke
     defaults: { _controller: clutchengineering.api.controller.oauth:revoke_token }
     methods: [POST]
-    options:
-        middleware: ['clutchengineering.api.auth.api_auth_middleware']

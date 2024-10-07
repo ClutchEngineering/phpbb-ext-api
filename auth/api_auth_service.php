@@ -44,4 +44,10 @@ class api_auth_service
 
         return true;
     }
+
+    public function get_user_id()
+    {
+        $token = $this->get_request_token();
+        return $this->token_manager->get_user_id_from_token($token);
+    }
 }

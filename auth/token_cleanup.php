@@ -29,5 +29,4 @@ class token_cleanup
             add_log('admin', 'LOG_OAUTH_TOKENS_CLEANED', $affected_rows);
         }
     }
-    }
 }

@@ -27,6 +27,16 @@ class token_manager
         return $this->auth_codes_table;
     }
 
+    public function get_user_id_from_token($token)
+    {
+        try {
+            $decoded = JWT::decode($token, new Key($this->config['clutcheng_api_jwt_secret_key'], 'HS256'));
+            return $decoded->sub; // 'sub' is where we stored the user_id
+        } catch (\Exception $e) {
+            return null;
+        }
+    }
+
     public function create_tokens($user_id)
     {
         $access_token = $this->generate_token($user_id, 'access');
