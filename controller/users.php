@@ -50,9 +50,7 @@ class users {
     private function get_user( $user_id = 0 ) {
 
         if ( 0 === $user_id ) {
-
             return false;
-        
         }
 
         $sql = 'SELECT user_id, username, user_email, user_regdate, user_lastvisit, user_avatar, user_avatar_type, user_avatar_width, user_avatar_height FROM ' . USERS_TABLE . ' WHERE ' . $this->database->sql_build_array( 'SELECT', [
@@ -64,9 +62,7 @@ class users {
         $this->database->sql_freeresult( $result );
 
         if ( NULL === $user ) {
-
             return false;
-
         }
 
         return $user;
@@ -108,26 +104,25 @@ class users {
             return $auth_result; // This will be a JsonResponse with an error
         }
 
-        // Your existing endpoint logic here
-        $response = [
-            'message' => $this->language->lang('DEFAULT_API_RESPONSE'),
-            'status' => 200,
-            'data' => [
-                'user_id' => (int) $user_id,
-                'user' => []
-            ]
-        ];
-
         $user = $this->get_user($user_id);
 
-        if (false !== $user) {
-            $response['data']['user'] = [
-                'user_id' => $user['user_id'],
-                'user_name' => $user['username'],
-                'user_email' => $user['user_email'],
+        if ($user === false) {
+            $response = [
+                'error' => 'User not found'
             ];
+            return new JsonResponse($response, 404);
         }
 
+        $avatar = $this->get_avatar($user);
+        $response = [
+            'data' => [
+                'user_id' => $user['user_id'],
+                'user_name' => $user['username'],
+                'registered' => DateUtil::formatDate($user['user_regdate']),
+                'last_visit' => DateUtil::formatDate($user['user_lastvisit']),
+                'avatar' => $avatar,
+            ]
+        ];
         return new JsonResponse($response, 200);
     }
 
