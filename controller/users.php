@@ -42,13 +42,12 @@ class users {
     }
 
     /**
-     * Fetch selected user.
+     * Fetch selected user by their identifier.
      * 
      * @param integer $user_id
      * @return boolean|array
      */
-    private function get_user( $user_id = 0 ) {
-
+    private function get_user_by_id($user_id) {
         if ( 0 === $user_id ) {
             return false;
         }
@@ -61,11 +60,38 @@ class users {
         $user = $this->database->sql_fetchrow( $result );
         $this->database->sql_freeresult( $result );
 
-        if ( NULL === $user ) {
-            return false;
-        }
+        return $user ?: false;
+    }
 
-        return $user;
+    private function get_user_by_username($username)
+    {
+        $sql = 'SELECT user_id, username, user_regdate, user_lastvisit, user_avatar, user_avatar_type, user_avatar_width, user_avatar_height FROM ' . USERS_TABLE . ' WHERE ' . $this->database->sql_build_array('SELECT', [
+            'username_clean' => utf8_clean_string($username)
+        ]);
+
+        $result = $this->database->sql_query($sql);
+        $user = $this->database->sql_fetchrow($result);
+        $this->database->sql_freeresult($result);
+
+        return $user ?: false;
+    }
+
+    private function format_user_response($user)
+    {
+        $avatar = $this->get_avatar($user);
+
+        $response = [
+            'user_id' => (int)$user['user_id'],
+            'username' => $user['username'],
+            'registered' => DateUtil::formatDate($user['user_regdate']),
+            'last_visit' => DateUtil::formatDate($user['user_lastvisit']),
+            'avatar' => $avatar,
+        ];
+        // If user contains user_email, add it to the response
+        if (!empty($user['user_email'])) {
+            $response['email'] = $user['user_email'];
+        }
+        return $response;
     }
 
     public function me(Request $request)
@@ -76,54 +102,29 @@ class users {
         }
 
         $user_id = $this->auth_service->get_user_id();
-        $user = $this->get_user($user_id);
-
+        $user = $this->get_user_by_id($user_id);
         if (!$user) {
             return new JsonResponse(['error' => 'User not found'], 404);
         }
-
-        $avatar = $this->get_avatar($user);
-
-        $response = [
-            'user_id' => $user['user_id'],
-            'username' => $user['username'],
-            'email' => $user['user_email'],
-            'registered' => DateUtil::formatDate($user['user_regdate']),
-            'last_visit' => DateUtil::formatDate($user['user_lastvisit']),
-            'avatar' => $avatar,
-            // Add any other fields you want to include
-        ];
-
-        return new JsonResponse($response, 200);
+        return new JsonResponse($this->format_user_response($user), 200);
     }
 
-    public function endpoint(Request $request, $user_id = 0)
+    public function user_by_username(Request $request, $username = '')
     {
         $auth_result = $this->auth_service->authenticate();
         if ($auth_result !== true) {
             return $auth_result; // This will be a JsonResponse with an error
         }
 
-        $user = $this->get_user($user_id);
-
-        if ($user === false) {
-            $response = [
-                'error' => 'User not found'
-            ];
-            return new JsonResponse($response, 404);
+        if (empty($username)) {
+            return new JsonResponse(['error' => 'Username is required'], 400);
         }
 
-        $avatar = $this->get_avatar($user);
-        $response = [
-            'data' => [
-                'user_id' => $user['user_id'],
-                'user_name' => $user['username'],
-                'registered' => DateUtil::formatDate($user['user_regdate']),
-                'last_visit' => DateUtil::formatDate($user['user_lastvisit']),
-                'avatar' => $avatar,
-            ]
-        ];
-        return new JsonResponse($response, 200);
+        $user = $this->get_user_by_username($username);
+        if (!$user) {
+            return new JsonResponse(['error' => 'User not found'], 404);
+        }
+        return new JsonResponse($this->format_user_response($user), 200);
     }
 
     private function get_avatar($user)

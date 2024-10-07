@@ -3,13 +3,12 @@
 clutchengineering_api_users_me_route:
     path: /api/v1/users/me
     defaults: { _controller: clutchengineering.api.controller.users:me }
-    methods: [GET]
 
 clutchengineering_api_users_user_route:
-    path: /api/v1/users/{user_id}
-    defaults: { _controller: clutchengineering.api.controller.users:endpoint, user_id: 0 }
+    path: /api/v1/users/{username}
+    defaults: { _controller: clutchengineering.api.controller.users:user_by_username, username: 0 }
     requirements:
-        user_id: \d+
+        username: .+
 
 # OAuth routes
 
