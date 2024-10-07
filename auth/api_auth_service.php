@@ -31,7 +31,6 @@ class api_auth_service
     {
         $token = $this->get_request_token();
 
-        // If $token doesn't have 'Bearer ' at the beginning, it's invalid
         if ($token === NULL || !$token) {
             return new JsonResponse(['error' => 'No token provided'], 401);
         }
