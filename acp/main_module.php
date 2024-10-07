@@ -45,6 +45,7 @@ class main_module
 
             $this->config->set('jwt_secret_key', $this->request->variable('jwt_secret_key', ''));
             $this->config->set('jwt_secret_key_set', '1');
+            $this->config->set('clutcheng_api_oauth_redirect_uri', $this->request->variable('clutcheng_api_oauth_redirect_uri', ''));
 
             trigger_error($this->language->lang('ACP_API_SETTINGS_SAVED') . adm_back_link($this->u_action));
         }
@@ -52,6 +53,8 @@ class main_module
         $this->template->assign_vars([
             'U_ACTION'        => $this->u_action,
             'JWT_SECRET_KEY'  => $this->config['jwt_secret_key'],
+            'JWT_SECRET_KEY_SET'  => $this->config['jwt_secret_key_set'],
+            'OAUTH_REDIRECT_URI' => $this->config['clutcheng_api_oauth_redirect_uri'],
         ]);
     }
 }

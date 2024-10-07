@@ -8,6 +8,10 @@
             <dt><label for="jwt_secret_key">{{ lang('ACP_JWT_SECRET_KEY') }}:</label><br /><span>{{ lang('ACP_JWT_SECRET_KEY_EXPLAIN') }}</span></dt>
             <dd><input type="text" id="jwt_secret_key" name="jwt_secret_key" size="40" maxlength="255" value="{{ JWT_SECRET_KEY }}" /></dd>
         </dl>
+        <dl>
+            <dt><label for="clutcheng_api_oauth_redirect_uri">{L_ACP_OAUTH_REDIRECT_URI}{L_COLON}</label><br /><span>{L_ACP_OAUTH_REDIRECT_URI_EXPLAIN}</span></dt>
+            <dd><input type="text" id="clutcheng_api_oauth_redirect_uri" name="clutcheng_api_oauth_redirect_uri" value="{OAUTH_REDIRECT_URI}" /></dd>
+        </dl>
 
         {% if JWT_SECRET_KEY_SET %}
         <p class="success">{{ lang('ACP_JWT_SECRET_KEY_SET') }}</p>

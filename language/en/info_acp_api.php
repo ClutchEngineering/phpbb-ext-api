@@ -16,5 +16,6 @@ $lang = array_merge($lang, [
     'ACP_JWT_SECRET_KEY_SET'	=> 'JWT Secret Key is set.',
     'ACP_JWT_SECRET_KEY_NOT_SET'=> 'Warning: JWT Secret Key is not set. Please set it for secure API functionality.',
     'ACP_API_SETTINGS_SAVED'	=> 'API settings have been saved successfully.',
-    'ACP_API_SETTING_SAVED'     => 'API settings have been saved successfully.',
+    'ACP_OAUTH_REDIRECT_URI'      => 'OAuth Redirect URI',
+    'ACP_OAUTH_REDIRECT_URI_EXPLAIN' => 'Enter the URI where users should be redirected after authorization.',
 ]);
