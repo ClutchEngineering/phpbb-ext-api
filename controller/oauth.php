@@ -96,8 +96,33 @@ class oauth
         return $auth_code;
     }
 
-    public function authorize(Request $request)
+    public function token(Request $request)
     {
+        $grant_type = $request->get('grant_type');
+        if ($grant_type == 'authorization_code') {
+            return $this->exchange_auth_code($request);
+        } elseif ($grant_type == 'refresh_token') {
+            return $this->refresh_token($request);
+        } else {
+            return new JsonResponse([
+                'error' => 'Invalid grant type',
+                'error_code' => 8
+            ], 400);
+        }
+    }
+
+    private function exchange_auth_code(Request $request) {
+        $expected_redirect_uri = $this->config['clutcheng_api_oauth_redirect_uri'];
+        if (empty($expected_redirect_uri)) {
+            return new JsonResponse(['error' => 'Redirect URI not configured'], 500);
+        }
+        if ($request->get('redirect_uri') != $expected_redirect_uri) {
+            return new JsonResponse([
+                'error' => 'Invalid redirect URI',
+                'error_code' => 7
+            ], 400);
+        }
+
         $auth_code = $request->get('code');
 
         if (!$auth_code) {
@@ -133,10 +158,13 @@ class oauth
         return new JsonResponse($tokens, 200);
     }
 
-    public function refresh_token(Request $request)
+    private function refresh_token(Request $request)
     {
+        $auth_result = $this->auth_service->authenticate();
+        if ($auth_result !== true) {
+            return $auth_result; // This will be a JsonResponse with an error
+        }
         $refresh_token = $request->get('refresh_token');
-
         if (!$refresh_token) {
             return new JsonResponse([
                 'error' => 'Missing refresh token',
@@ -144,7 +172,8 @@ class oauth
             ], 400);
         }
 
-        $new_tokens = $this->token_manager->refresh_token($refresh_token);
+        $token = $this->auth_service->get_request_token();
+        $new_tokens = $this->token_manager->refresh_token($token, $refresh_token);
         if ($new_tokens) {
             return new JsonResponse($new_tokens, 200);
         }

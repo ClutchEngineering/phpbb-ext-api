@@ -11,14 +11,9 @@ clutchengineering_api_oauth_login:
     defaults: { _controller: clutchengineering.api.controller.oauth:login }
     methods: [POST]
 
-clutchengineering_api_oauth_authorize:
-    path: /oauth/authorize
-    defaults: { _controller: clutchengineering.api.controller.oauth:authorize }
-    methods: [POST]
-
-clutchengineering_api_oauth_refresh:
-    path: /oauth/refresh
-    defaults: { _controller: clutchengineering.api.controller.oauth:refresh_token }
+clutchengineering_api_oauth_token:
+    path: /oauth/token
+    defaults: { _controller: clutchengineering.api.controller.oauth:token }
     methods: [POST]
 
 clutchengineering_api_oauth_revoke:

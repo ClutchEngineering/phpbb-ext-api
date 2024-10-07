@@ -37,14 +37,15 @@ class token_manager
         return [
             'access_token' => $access_token,
             'refresh_token' => $refresh_token,
-            'expires_in' => 3600 // 1 hour
+            'token_type' => 'Bearer',
+            'expires_in' => 60 * 60 * 12
         ];
     }
 
     protected function generate_token($user_id, $type = 'access')
     {
         $now = time();
-        $expiration = $type === 'access' ? $now + 60 * 60 * 12 : $now + 604800; // 1 hour for access, 1 week for refresh
+        $expiration = $type === 'access' ? $now + 60 * 60 * 12 : $now + 60 * 60 * 24 * 7; // 1 hour for access, 1 week for refresh
 
         $payload = [
             'iss' => $this->config['server_name'],
@@ -91,17 +92,19 @@ class token_manager
         }
     }
 
-    public function refresh_token($refresh_token)
+    public function refresh_token($token, $refresh_token)
     {
         try {
-            $decoded = JWT::decode($refresh_token, $this->config['clutcheng_api_jwt_secret_key'], ['HS256']);
-            
+            $decoded = JWT::decode($refresh_token, new Key($this->config['clutcheng_api_jwt_secret_key'], 'HS256'));
+
             if ($decoded->type !== 'refresh') {
                 throw new \Exception('Invalid token type');
             }
 
             $sql = 'SELECT * FROM ' . $this->tokens_table . ' 
-                    WHERE refresh_token = "' . $this->db->sql_escape($refresh_token) . '"';
+                    WHERE access_token = "' . $this->db->sql_escape($token) . '"
+                    AND expires_at > ' . time() . '
+                    AND refresh_token = "' . $this->db->sql_escape($refresh_token) . '"';
             $result = $this->db->sql_query($sql);
             $row = $this->db->sql_fetchrow($result);
             $this->db->sql_freeresult($result);
@@ -123,7 +126,8 @@ class token_manager
 
             $sql = 'UPDATE ' . $this->tokens_table . ' 
                     SET ' . $this->db->sql_build_array('UPDATE', $sql_ary) . '
-                    WHERE refresh_token = "' . $this->db->sql_escape($refresh_token) . '"';
+                    WHERE access_token = "' . $this->db->sql_escape($token) . '"
+                    AND refresh_token = "' . $this->db->sql_escape($refresh_token) . '"';
             $this->db->sql_query($sql);
 
             return $new_tokens;
